@@ -22,6 +22,7 @@ class User(SQLModel, table=True):
         # Generates a timezone-aware UTC datetime if created in Python code
         default_factory=lambda: datetime.now(timezone.utc)
     )
+    attribute_radar_chart: dict # This for the user, so all the games level attribute charts culminate into this user level chart. JSONB having few fixed attributes and score out of 100 on all the attributes. This can be rendered in FE as a radar chart.
 
     # # Optional columns are just typed with Optional.
     # karma_title: Optional[str] = None
