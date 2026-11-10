@@ -34,6 +34,10 @@ class ReviewStatus(str, Enum):
     APPROVED = "Approved"
     REJECTED = "Rejected"
 
+class VectorAuditType(str, Enum):
+    BYPASS = "Bypass"
+    MARGINAL_MISS = "Marginal_Miss"
+
 # ==========================================
 # DATABASE SCHEMAS
 # ==========================================
@@ -132,3 +136,30 @@ class VerifiedBridges(SQLModel, table=True):
         # Generates a timezone-aware UTC datetime if created in Python code
         default_factory=lambda: datetime.now(timezone.utc)
     )
+
+class VectorBypassAudit(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    game_history_id: uuid.UUID = Field(foreign_key="gamehistory.id", index=True) # FK to GameHistory table PK
+    source_word: str = Field(index=True, nullable=False)
+    target_word: str = Field(index=True, nullable=False)
+    matched_verified_bridge_id: uuid.UUID = Field(foreign_key="verifiedbridges.id", index=True)
+    similarity_score: float = Field(nullable=False)
+    type: VectorAuditType = Field(sa_column=Column(String, nullable=False))
+    threshold_at_creation: float = Field(nullable=False)
+    status: ReviewStatus = Field(sa_column=Column(String, nullable=False)) # Either "Pending", "Approved" or "Rejected". If rejected it just does not appear in the admin dashboard. 
+    created_at: datetime = Field(
+            sa_column=Column(
+                DateTime(timezone=True), 
+                nullable=False, 
+                # Sets DEFAULT now() at the database level
+                server_default=text("now()") 
+            ),
+            # Generates a timezone-aware UTC datetime if created in Python code
+            default_factory=lambda: datetime.now(timezone.utc)
+        )
+    updated_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))) # Whenever admin makes updates. Only the latest update timestamp will be recorded, in case they make multiple updates.
+
+class SystemSettings(SQLModel, table = True): # Mostly this is going to be a 1 row table
+    id: int = Field(primary_key=True)
+    vector_bypass_threshold: float = Field(nullable=False)
+    default_game_mode: int = Field(foreign_key="gamemode.id", nullable=False)
