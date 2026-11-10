@@ -46,7 +46,7 @@ class User(SQLModel, table=True):
     username: str = Field(unique=True, index=True, nullable=False)
     hashed_password: str = Field(nullable=False)
     # JSONB column for the culminated user-level radar chart
-    attribute_radar_chart: Optional[RadarChartData] = Field(default=None, sa_column=Column(JSONB), nullable=True) # This for the user, so all the games level attribute charts culminate into this user level chart. JSONB having few fixed attributes and score out of 100 on all the attributes. This can be rendered in FE as a radar chart.
+    attribute_radar_chart: Optional[RadarChartData] = Field(default=None, sa_column=Column(JSONB, nullable=True)) # This for the user, so all the games level attribute charts culminate into this user level chart. JSONB having few fixed attributes and score out of 100 on all the attributes. This can be rendered in FE as a radar chart.
     # Strictly enforces 'timestamp with time zone' in PostgreSQL
     created_at: datetime = Field(
         sa_column=Column(
